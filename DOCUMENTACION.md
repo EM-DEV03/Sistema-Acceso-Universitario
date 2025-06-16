@@ -1,70 +1,75 @@
-# Documentación Técnica — Sistema de Acceso Universitario
+# Documentación Técnica
 
-## Estructura del proyecto
+## Descripción General
 
-```
-app.py
-db_setup.py
-requirements.txt
-db/
-    acceso.db
-static/
-    css/
-        styles.css
-templates/
-    *.html
-utils/
-    pin_utils.py
-```
+El Sistema de Acceso Universitario es una aplicación web desarrollada en Python utilizando Flask y SQLite. Permite gestionar el acceso de estudiantes y visitantes, así como la administración de materias y exportación de registros.
 
-## Base de datos
+## Arquitectura
 
-Tablas principales:
+- **Backend:** Python (Flask)
+- **Frontend:** HTML5, CSS3 (Bootstrap), Jinja2
+- **Base de datos:** SQLite3
 
-- **Estudiante**: id, nombre, dni, telefono, curso, salon, pin
-- **Materia**: id, nombre, hora_inicio, hora_fin, estudiante_id
-- **Visitante**: id, nombre, motivo, hora_entrada, hora_salida, tiempo_limite, unidad
-- **Registro**: id, persona_id, nombre, rol, hora_entrada, hora_salida, activo
-- **Admin**: id, username, password_hash
+## Estructura de la Base de Datos
 
-## Principales rutas y funcionalidades
+- **Admin:** id, username, password_hash
+- **Estudiante:** id, nombre, dni, telefono, curso, salon, pin
+- **Materia:** id, nombre, hora_inicio, hora_fin, estudiante_id
+- **Visitante:** id, nombre, motivo, hora_entrada, hora_salida, tiempo_limite, unidad
+- **Registro:** id, persona_id, nombre, rol, hora_entrada, hora_salida, activo
 
-- `/` — Inicio
-- `/login` — Login administrador
-- `/logout` — Logout administrador
-- `/admin` — Panel administrador
-- `/admin/nuevo_estudiante` — Registrar estudiante (POST)
-- `/admin/eliminar_estudiante/<id>` — Eliminar estudiante (POST)
-- `/admin/exportar_csv` — Descargar historial CSV
-- `/visitante` — Registro y control de visitantes
-- `/estudiante/login` — Login estudiante por PIN
-- `/estudiante/dashboard` — Panel estudiante
-- `/estudiante/agregar_materia` — Agregar materia (POST)
-- `/estudiante/eliminar_materia/<id>` — Eliminar materia (POST)
-- `/estudiante/logout` — Logout estudiante
-- `/hardware` — Conexión hardware
+## Principales Rutas y Funcionalidades
+
+| Ruta                              | Método | Descripción                                      |
+|------------------------------------|--------|--------------------------------------------------|
+| `/`                               | GET    | Página de inicio                                 |
+| `/login`                          | GET/POST | Autenticación de administrador                  |
+| `/logout`                         | GET    | Cierre de sesión de administrador                |
+| `/admin`                          | GET    | Panel de administración                          |
+| `/admin/nuevo_estudiante`         | POST   | Registro de nuevo estudiante                     |
+| `/admin/eliminar_estudiante/<id>` | POST   | Eliminación de estudiante                        |
+| `/admin/exportar_csv`             | GET    | Exportación de historial en CSV                  |
+| `/visitante`                      | GET/POST | Registro y control de visitantes                |
+| `/estudiante/login`               | GET/POST | Acceso de estudiante por PIN                    |
+| `/estudiante/dashboard`           | GET    | Panel de materias del estudiante                 |
+| `/estudiante/agregar_materia`     | POST   | Agregar materia al estudiante                    |
+| `/estudiante/eliminar_materia/<id>` | POST | Eliminar materia del estudiante                  |
+| `/estudiante/logout`              | GET    | Cierre de sesión de estudiante                   |
+| `/hardware`                       | GET    | Conexión con hardware externo                    |
 
 ## Utilidades
 
-- `utils/pin_utils.py`: Generación de PIN aleatorio de 6 dígitos.
+- **utils/pin_utils.py:** Generación y validación de PINs aleatorios de 6 dígitos para estudiantes.
 
 ## Plantillas
 
-Las vistas HTML están en la carpeta `templates/`, usando Jinja2 y Bootstrap.
+Las vistas HTML se encuentran en la carpeta `templates/` y utilizan Jinja2 para la renderización dinámica. El diseño visual se apoya en Bootstrap para garantizar una experiencia responsiva.
 
-## Exportación de datos
+## Exportación de Datos
 
-El historial de accesos puede exportarse a CSV desde el panel de administrador.
+El historial de accesos puede exportarse en formato CSV desde el panel de administración, facilitando la gestión y análisis externo de los registros.
 
-## Integración con hardware
+## Integración con Hardware
 
-La sección `/hardware` permite conectar dispositivos Arduino/ESP32 mediante la Web Serial API (solo navegadores compatibles).
+La sección `/hardware` permite la conexión con dispositivos Arduino/ESP32 mediante la Web Serial API. Esta funcionalidad está disponible únicamente en navegadores compatibles.
 
-## Dependencias principales
+## Dependencias Principales
 
 - Flask
+- Flask-Login
 - SQLite3
 - Jinja2
 - Bootstrap
 
-Consulta `requirements.txt` para el listado completo.
+Para el listado completo, consulta `requirements.txt`.
+
+## Seguridad
+
+- Contraseñas de administradores almacenadas con hash seguro.
+- Validación de formularios y manejo de sesiones.
+- Se recomienda utilizar HTTPS en producción.
+
+## Mantenimiento
+
+- El código está modularizado para facilitar la extensión y el mantenimiento.
+- Las rutas y utilidades están documentadas y separadas por funcionalidad.

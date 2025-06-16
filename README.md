@@ -1,21 +1,42 @@
 # Sistema de Acceso Universitario
 
-Sistema web para la gestión de accesos de estudiantes y visitantes en una universidad, con registro de entradas/salidas, control de tiempo para visitantes y administración de estudiantes y materias.
+Este sistema web permite la gestión eficiente de accesos de estudiantes y visitantes en una institución universitaria. Incluye registro de entradas y salidas, control de tiempo para visitantes, administración de estudiantes y materias, y exportación de registros.
 
-## Características principales
+## Tabla de Contenidos
 
-- Registro y autenticación de administradores.
-- Registro de estudiantes con generación automática de PIN.
-- Panel de control para administración de estudiantes y visualización de registros.
+- [Características](#características)
+- [Requisitos](#requisitos)
+- [Instalación](#instalación)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Configuración Inicial](#configuración-inicial)
+- [Acceso Inicial](#acceso-inicial)
+- [Documentación y Manual de Usuario](#documentación-y-manual-de-usuario)
+- [Licencia](#licencia)
+
+## Características
+
+- Gestión de usuarios administradores.
+- Registro y control de estudiantes con PIN único.
+- Panel de administración para gestión de estudiantes y visualización de registros.
 - Acceso de estudiantes mediante PIN y gestión de materias.
-- Registro de visitantes con control de tiempo de permanencia.
-- Exportación de historial de accesos a CSV.
-- Interfaz web moderna y responsiva.
+- Registro y control de visitantes con límite de tiempo configurable.
+- Exportación de historial de accesos en formato CSV.
+- Interfaz web responsiva y moderna.
 - Integración básica para conexión de hardware (Arduino/ESP32) vía Web Serial API.
 
-## Instalación rápida
+## Requisitos
 
-1. Clona el repositorio y entra a la carpeta del proyecto.
+- Python 3.8 o superior
+- pip
+- Navegador web moderno (para Web Serial API, se recomienda Chrome)
+
+## Instalación
+
+1. Clona el repositorio:
+   ```sh
+   git clone https://github.com/tu_usuario/Sistema-Acceso-Universitario.git
+   cd Sistema-Acceso-Universitario
+   ```
 2. Instala las dependencias:
    ```sh
    pip install -r requirements.txt
@@ -24,14 +45,55 @@ Sistema web para la gestión de accesos de estudiantes y visitantes en una unive
    ```sh
    python app.py
    ```
+<<<<<<< HEAD
 4. Accede a `http://localhost:5000` en tu navegador.
+=======
+5. Accede a la aplicación desde tu navegador en `http://localhost:5000`.
+>>>>>>> 17f39f5 (	modified:   DOCUMENTACION.md)
 
-## Acceso administrador por defecto
+## Estructura del Proyecto
 
-- Usuario: `admin`
-- Contraseña: `123` (puedes cambiarla en la base de datos)
+```
+Sistema-Acceso-Universitario/
+│
+├── app.py
+├── db_setup.py
+├── requirements.txt
+├── README.md
+├── DOCUMENTACION.md
+├── MANUAL_USUARIO.md
+│
+├── db/
+│   └── acceso.db
+│
+├── static/
+│   └── css/
+│       └── styles.css
+│
+├── templates/
+│   └── *.html
+│
+└── utils/
+    └── pin_utils.py
+```
 
-## Más información
+## Configuración Inicial
 
+<<<<<<< HEAD
 - [Documentación técnica](DOCUMENTACION.md)
 - [Manual de usuario](MANUAL_USUARIO.md)
+=======
+- El usuario administrador por defecto es:
+  - Usuario: `admin`
+  - Contraseña: `123`
+- Se recomienda cambiar la contraseña tras el primer inicio de sesión.
+
+## Documentación y Manual de Usuario
+
+- [Documentación Técnica](DOCUMENTACION.md)
+- [Manual de Usuario](MANUAL_USUARIO.md)
+
+## Licencia
+
+Este proyecto se distribuye bajo la licencia MIT.
+>>>>>>> 17f39f5 (	modified:   DOCUMENTACION.md)
