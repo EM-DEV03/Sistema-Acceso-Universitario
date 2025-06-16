@@ -44,14 +44,14 @@ class Visitante(db.Model):
     motivo = db.Column(db.String(200), nullable=False)
     hora_entrada = db.Column(db.String(30), nullable=False)
     hora_salida = db.Column(db.String(30))
-    tiempo_limite = db.Column(db.Integer, nullable=False)  # minutos u horas
-    unidad = db.Column(db.String(5), default='min')  # 'min' o 'h'
+    tiempo_limite = db.Column(db.Integer, nullable=False)  
+    unidad = db.Column(db.String(5), default='min')  
 
 class Registro(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     persona_id = db.Column(db.Integer, nullable=False)
     nombre = db.Column(db.String(100), nullable=False)
-    rol = db.Column(db.String(20), nullable=False)  # 'Estudiante' o 'Visitante'
+    rol = db.Column(db.String(20), nullable=False)
     hora_entrada = db.Column(db.String(30), nullable=False)
     hora_salida = db.Column(db.String(30))
     activo = db.Column(db.Boolean, default=True)
@@ -286,3 +286,17 @@ if __name__ == '__main__':
             db.session.add(admin)
             db.session.commit()
     app.run(debug=True)
+    
+    
+    
+    '''
+__/\\\\\\\\\\\\\\\__/\\\\____________/\\\\____________________/\\\\\\\\\\\\_____/\\\\\\\\\\\\\\\__/\\\________/\\\_        
+ _\/\\\///////////__\/\\\\\\________/\\\\\\___________________\/\\\////////\\\__\/\\\///////////__\/\\\_______\/\\\_       
+  _\/\\\_____________\/\\\//\\\____/\\\//\\\___________________\/\\\______\//\\\_\/\\\_____________\//\\\______/\\\__      
+   _\/\\\\\\\\\\\_____\/\\\\///\\\/\\\/_\/\\\___________________\/\\\_______\/\\\_\/\\\\\\\\\\\______\//\\\____/\\\___     
+    _\/\\\///////______\/\\\__\///\\\/___\/\\\___________________\/\\\_______\/\\\_\/\\\///////________\//\\\__/\\\____    
+     _\/\\\_____________\/\\\____\///_____\/\\\___________________\/\\\_______\/\\\_\/\\\________________\//\\\/\\\_____   
+      _\/\\\_____________\/\\\_____________\/\\\___________________\/\\\_______/\\\__\/\\\_________________\//\\\\\______  
+       _\/\\\\\\\\\\\\\\\_\/\\\_____________\/\\\__/\\\\\\\\\\\\\\\_\/\\\\\\\\\\\\/___\/\\\\\\\\\\\\\\\______\//\\\_______ 
+        _\///////////////__\///______________\///__\///////////////__\////////////_____\///////////////________\///________
+    '''
