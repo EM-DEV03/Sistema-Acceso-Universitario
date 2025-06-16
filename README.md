@@ -45,11 +45,8 @@ Este sistema web permite la gestión eficiente de accesos de estudiantes y visit
    ```sh
    python app.py
    ```
-<<<<<<< HEAD
 4. Accede a `http://localhost:5000` en tu navegador.
-=======
 5. Accede a la aplicación desde tu navegador en `http://localhost:5000`.
->>>>>>> 17f39f5 (	modified:   DOCUMENTACION.md)
 
 ## Estructura del Proyecto
 
@@ -79,10 +76,8 @@ Sistema-Acceso-Universitario/
 
 ## Configuración Inicial
 
-<<<<<<< HEAD
 - [Documentación técnica](DOCUMENTACION.md)
 - [Manual de usuario](MANUAL_USUARIO.md)
-=======
 - El usuario administrador por defecto es:
   - Usuario: `admin`
   - Contraseña: `123`
@@ -96,4 +91,3 @@ Sistema-Acceso-Universitario/
 ## Licencia
 
 Este proyecto se distribuye bajo la licencia MIT.
->>>>>>> 17f39f5 (	modified:   DOCUMENTACION.md)
