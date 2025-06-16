@@ -107,11 +107,8 @@ def logout():
 @login_required
 def admin_dashboard():
     estudiantes = Estudiante.query.all()
-    # Solo estudiantes en registros
     registros = Registro.query.filter_by(rol="Estudiante").order_by(Registro.id.desc()).limit(20).all()
-    # Solo visitantes en visitantes
     visitantes = Visitante.query.order_by(Visitante.id.desc()).limit(10).all()
-    # Visitantes activos cuyo tiempo terminó
     visitantes_alerta = []
     ahora = datetime.now()
     for v in Visitante.query.filter_by(hora_salida=None).all():
@@ -185,7 +182,6 @@ def visitante():
             db.session.add(nuevo_registro)
             db.session.commit()
             mensaje = f"Visitante {nombre} registrado correctamente."
-    # Visitantes activos (sin hora_salida)
     visitantes_activos = Visitante.query.filter_by(hora_salida=None).all()
     return render_template('visitante.html', mensaje=mensaje, visitantes_activos=visitantes_activos)
 
@@ -199,14 +195,12 @@ def estudiante_login():
             registro_activo = Registro.query.filter_by(persona_id=estudiante.id, rol="Estudiante", activo=True).first()
             ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             if registro_activo:
-                # Registrar salida
                 registro_activo.hora_salida = ahora
                 registro_activo.activo = False
                 db.session.commit()
                 flash('¡Salida registrada correctamente! Esperamos verte pronto.', 'success')
                 return redirect(url_for('estudiante_login'))
             else:
-                # Registrar entrada y permitir acceso al dashboard
                 session['estudiante_id'] = estudiante.id
                 nuevo_registro = Registro(
                     persona_id=estudiante.id,
@@ -282,8 +276,8 @@ if __name__ == '__main__':
         db.create_all()
         if not Admin.query.filter_by(username='admin').first():
             admin = Admin(username='admin')
-            admin.set_password('admin123')
+            admin.set_password('123')
             db.session.add(admin)
             db.session.commit()
-    app.run(debug=True)
-    
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
