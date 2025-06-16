@@ -20,15 +20,11 @@ Sistema web para la gestión de accesos de estudiantes y visitantes en una unive
    ```sh
    pip install -r requirements.txt
    ```
-3. Inicializa la base de datos:
-   ```sh
-   python db_setup.py
-   ```
-4. Ejecuta la aplicación:
+3. Ejecuta la aplicación:
    ```sh
    python app.py
    ```
-5. Accede a `http://localhost:5000` en tu navegador.
+4. Accede a `http://localhost:5000` en tu navegador.
 
 ## Acceso administrador por defecto
 
