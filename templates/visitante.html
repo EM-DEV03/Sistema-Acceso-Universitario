@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Registro de Visitante{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="card p-4 shadow border-0">
+            <h2 class="mb-4 fw-bold text-center">Registro de Visitante</h2>
+            <form method="post" id="formVisitante" autocomplete="off">
+                <div class="mb-3">
+                    <input type="text" name="nombre" class="form-control form-control-lg" placeholder="Nombre Y Apellido" required>
+                </div>
+                <div class="mb-3">
+                    <input type="text" name="motivo" class="form-control form-control-lg" placeholder="Motivo de la visita" required>
+                </div>
+                <div class="mb-3">
+                    <label class="mb-1">Tiempo límite:</label>
+                    <div class="input-group">
+                        <input type="number" name="tiempo_limite" id="tiempo_limite" class="form-control form-control-lg" placeholder="Cantidad" min="1" required>
+                        <select name="unidad_tiempo" id="unidad_tiempo" class="form-select form-select-lg">
+                            <option value="min">Minutos</option>
+                            <option value="h">Horas</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill">Registrar</button>
+            </form>
+            {% if mensaje %}
+            <div class="alert alert-info mt-3">{{ mensaje }}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if visitantes_activos %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-10">
+        <div class="card p-4 shadow border-0">
+            <h4 class="fw-bold mb-3" style="color:#0a346d;">Visitantes actualmente dentro</h4>
+            <table class="table table-bordered align-middle text-center">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Motivo</th>
+                        <th>Entrada</th>
+                        <th>Tiempo límite</th>
+                        <th>Cronómetro</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in visitantes_activos %}
+                    <tr id="visitante-{{ v.id }}">
+                        <td>{{ v.nombre }}</td>
+                        <td>{{ v.motivo }}</td>
+                        <td>{{ v.hora_entrada }}</td>
+                        <td>
+                            {% if v.unidad == 'h' %}
+                                {{ v.tiempo_limite }} hora(s)
+                            {% else %}
+                                {{ v.tiempo_limite }} minuto(s)
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="cronometro" data-id="{{ v.id }}" data-inicio="{{ v.hora_entrada }}" data-limite="{{ v.tiempo_limite }}" data-unidad="{{ v.unidad }}"></span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Mensaje flotante -->
+<div id="mensaje-flotante" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;background:rgba(0,0,0,0.85);color:#fff;align-items:center;justify-content:center;font-size:2.2rem;font-weight:bold;text-align:center;">
+    <div>
+        <span id="mensaje-flotante-texto"></span>
+    </div>
+</div>
+<audio id="alarma" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfae5b6.mp3"></audio>
+
+<script>
+// Función para convertir fecha/hora a timestamp
+function parseFecha(fechaStr) {
+    // Formato esperado: "YYYY-MM-DD HH:MM:SS"
+    let partes = fechaStr.split(' ');
+    let fecha = partes[0].split('-');
+    let hora = partes[1].split(':');
+    return new Date(fecha[0], fecha[1]-1, fecha[2], hora[0], hora[1], hora[2]).getTime();
+}
+
+function iniciarCronometros() {
+    document.querySelectorAll('.cronometro').forEach(function(span) {
+        let id = span.dataset.id;
+        let inicio = parseFecha(span.dataset.inicio);
+        let limite = parseInt(span.dataset.limite);
+        let unidad = span.dataset.unidad;
+        let limiteMs = unidad === 'h' ? limite * 3600 * 1000 : limite * 60 * 1000;
+        let fin = inicio + limiteMs;
+
+        let intervalo = setInterval(function() {
+            let ahora = new Date().getTime();
+            let restante = Math.floor((fin - ahora) / 1000);
+            if (restante > 0) {
+                let min = Math.floor(restante / 60);
+                let seg = restante % 60;
+                span.textContent = `${min}m ${seg}s`;
+            } else {
+                clearInterval(intervalo);
+                span.textContent = "¡Tiempo finalizado!";
+                mostrarMensajeFlotante(id);
+            }
+        }, 1000);
+    });
+}
+
+function mostrarMensajeFlotante(id) {
+    let fila = document.getElementById('visitante-' + id);
+    let nombre = fila ? fila.children[0].textContent : "Visitante";
+    document.getElementById('mensaje-flotante-texto').textContent = `¡Se acabó el tiempo de ${nombre}! Por favor, retírese.`;
+    document.getElementById('mensaje-flotante').style.display = 'flex';
+    document.getElementById('alarma').play();
+    setTimeout(() => {
+        document.getElementById('mensaje-flotante').style.display = 'none';
+    }, 10000);
+}
+
+window.onload = iniciarCronometros;
+</script>
+{% endblock %}

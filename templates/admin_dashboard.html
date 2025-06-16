@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Panel Administrador{% endblock %}
+{% block content %}
+
+{% if visitantes_alerta %}
+<div class="alert alert-danger text-center fw-bold" style="font-size:1.2rem;">
+    {% for v in visitantes_alerta %}
+        <div>¡El tiempo del visitante <b>{{ v.nombre }}</b> ha finalizado!</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card p-3 mb-4">
+            <h4>Registrar nuevo estudiante</h4>
+            <form method="post" action="{{ url_for('nuevo_estudiante') }}">
+                <div class="row">
+                    <div class="col mb-2">
+                        <input type="text" name="nombre" class="form-control" placeholder="Nombre" required>
+                    </div>
+                    <div class="col mb-2">
+                        <input type="text" name="dni" class="form-control" placeholder="DNI" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col mb-2">
+                        <input type="text" name="telefono" class="form-control" placeholder="Teléfono" required>
+                    </div>
+                    <div class="col mb-2">
+                        <input type="text" name="curso" class="form-control" placeholder="Curso" required>
+                    </div>
+                    <div class="col mb-2">
+                        <input type="text" name="salon" class="form-control" placeholder="Salón" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success w-100">Registrar</button>
+            </form>
+        </div>
+        <div class="card p-3">
+            <h4>Estudiantes registrados</h4>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Nombre</th><th>DNI</th><th>PIN</th><th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for est in estudiantes %}
+                    <tr>
+                        <td>{{ est.nombre }}</td>
+                        <td>{{ est.dni }}</td>
+                        <td>{{ est.pin }}</td>
+                        <td>
+                            <form method="post" action="{{ url_for('eliminar_estudiante', id=est.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card p-3 mt-4">
+            <a href="{{ url_for('exportar_csv') }}" class="btn btn-outline-primary w-100">Exportar historial a CSV</a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-3 mb-4">
+            <h4 class="fw-bold" style="color:#0a346d;">Últimos registros</h4>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Nombre</th><th>Rol</th><th>Entrada</th><th>Salida</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reg in registros %}
+                        <tr>
+                            <td>{{ reg.nombre }}</td>
+                            <td>{{ reg.rol }}</td>
+                            <td>{{ reg.hora_entrada }}</td>
+                            <td>{{ reg.hora_salida or '-' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card p-3">
+            <h4 class="fw-bold" style="color:#0a346d;">Últimos visitantes</h4>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Nombre</th><th>Motivo</th><th>Entrada</th><th>Tiempo límite (min/h)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in visitantes %}
+                        <tr>
+                            <td>{{ v.nombre }}</td>
+                            <td>{{ v.motivo }}</td>
+                            <td>{{ v.hora_entrada }}</td>
+                            <td>
+                                {% if v.unidad == 'h' %}
+                                    {{ v.tiempo_limite }} hora(s)
+                                {% else %}
+                                    {{ v.tiempo_limite }} minuto(s)
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

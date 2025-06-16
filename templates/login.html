@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Login Administrador{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <div class="card p-4">
+            <h3>Acceso Administrador</h3>
+            <form method="post">
+                <div class="mb-3">
+                    <input type="text" name="username" class="form-control" placeholder="Usuario" required>
+                </div>
+                <div class="mb-3">
+                    <input type="password" name="password" class="form-control" placeholder="Contraseña" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

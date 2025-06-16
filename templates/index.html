@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Inicio - Sistema de Acceso{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <div class="card p-4 shadow-lg border-0">
+            <h2 class="mb-4 fw-bold text-center" style="letter-spacing:1px;">Sistema de Acceso</h2>
+            <div class="d-grid gap-3">
+                <a href="{{ url_for('estudiante_login') }}" class="btn btn-outline-success btn-lg rounded-pill fw-semibold" style="font-size:1.3rem;">Estudiante</a>
+                <a href="{{ url_for('visitante') }}" class="btn btn-outline-info btn-lg rounded-pill fw-semibold" style="font-size:1.3rem;">Visitante</a>
+                <a href="{{ url_for('hardware') }}" class="btn btn-primary btn-lg rounded-pill fw-semibold" style="font-size:1.3rem;">Conectar Hardware (Arduino/ESP32)</a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-dark btn-lg rounded-pill fw-semibold" style="font-size:1.3rem;">Administrador</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
