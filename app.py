@@ -151,7 +151,7 @@ def admin_dashboard():
     return render_template(
         'admin_dashboard.html',
         estudiantes=estudiantes,
-        registros_estudiantes=registros_estudiantes,
+        registros_estudiantes=registros,
         visitantes=visitantes,
         visitantes_alerta=visitantes_alerta
     )
