@@ -5,6 +5,9 @@ from flask_login import LoginManager, login_user, logout_user, login_required, U
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import csv
+import random
+import string
+from pytz import timezone
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DB_DIR = os.path.join(BASE_DIR, 'db')
@@ -28,24 +31,17 @@ class Estudiante(db.Model):
     telefono = db.Column(db.String(20), nullable=False)
     curso = db.Column(db.String(50), nullable=False)
     salon = db.Column(db.String(20), nullable=False)
-    pin = db.Column(db.String(6), unique=True, nullable=False)
-    materias = db.relationship('Materia', backref='estudiante', lazy=True)
-
-class Materia(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(100), nullable=False)
-    hora_inicio = db.Column(db.String(5), nullable=False)
-    hora_fin = db.Column(db.String(5), nullable=False)
-    estudiante_id = db.Column(db.Integer, db.ForeignKey('estudiante.id'), nullable=False)
+    pin = db.Column(db.String(3), unique=True, nullable=False)
 
 class Visitante(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(100), nullable=False)
-    motivo = db.Column(db.String(200), nullable=False)
-    hora_entrada = db.Column(db.String(30), nullable=False)
-    hora_salida = db.Column(db.String(30))
-    tiempo_limite = db.Column(db.Integer, nullable=False)  
-    unidad = db.Column(db.String(5), default='min')  
+    nombre = db.Column(db.String(100))
+    motivo = db.Column(db.String(100))
+    numero = db.Column(db.String(20))  # Teléfono o número de contacto
+    hora_entrada = db.Column(db.String(19))
+    hora_salida = db.Column(db.String(19), nullable=True)
+    tiempo_limite = db.Column(db.Integer)
+    unidad = db.Column(db.String(5))  # 'min' o 'h'
 
 class Registro(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -68,14 +64,19 @@ class Admin(UserMixin, db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return Admin.query.get(int(user_id))
+    return db.session.get(Admin, int(user_id))
 
-import random
-import string
 def generar_pin():
-    return "".join(random.choices(string.digits, k=6))
+    return "".join(random.choices(string.digits, k=3))
+
+def hora_colombia():
+    return datetime.now(timezone('America/Bogota')).strftime("%Y-%m-%d %H:%M:%S")
 
 @app.route('/')
+def root():
+    return redirect(url_for('estudiante_login'))
+
+@app.route('/index')
 def index():
     return render_template('index.html')
 
@@ -103,28 +104,61 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+def actualizar_visitantes_finalizados():
+    ahora = datetime.now(timezone('America/Bogota'))
+    visitantes_activos = Visitante.query.filter_by(hora_salida=None).all()
+    for v in visitantes_activos:
+        unidad = v.unidad if v.unidad else 'min'
+        limite = v.tiempo_limite
+        entrada = datetime.strptime(v.hora_entrada, "%Y-%m-%d %H:%M:%S")
+        entrada = timezone('America/Bogota').localize(entrada)
+        if unidad == 'h':
+            fin = entrada + timedelta(hours=limite)
+        else:
+            fin = entrada + timedelta(minutes=limite)
+        if ahora > fin:
+            v.hora_salida = ahora.strftime("%Y-%m-%d %H:%M:%S")
+            # También marca el registro como inactivo
+            registro = Registro.query.filter_by(persona_id=v.id, rol="Visitante", activo=True).first()
+            if registro:
+                registro.hora_salida = v.hora_salida
+                registro.activo = False
+    db.session.commit()
+
 @app.route('/admin')
 @login_required
 def admin_dashboard():
+    actualizar_visitantes_finalizados()
     estudiantes = Estudiante.query.all()
-    # Solo estudiantes en registros
-    registros = Registro.query.filter_by(rol="Estudiante").order_by(Registro.id.desc()).limit(20).all()
-    # Solo visitantes en visitantes
-    visitantes = Visitante.query.order_by(Visitante.id.desc()).limit(10).all()
-    # Visitantes activos cuyo tiempo terminó
+    registros_estudiantes = Registro.query.filter_by(rol="Estudiante").order_by(Registro.id.desc()).limit(20).all()
+    visitantes = Visitante.query.order_by(Visitante.id.desc()).all()
+    # Convertir fechas a hora colombiana para mostrar
+    for v in visitantes:
+        v.hora_entrada_col = v.hora_entrada
+        v.hora_salida_col = v.hora_salida
+    for r in registros_estudiantes:
+        r.hora_entrada_col = r.hora_entrada
+        r.hora_salida_col = r.hora_salida
     visitantes_alerta = []
-    ahora = datetime.now()
+    ahora = datetime.now(timezone('America/Bogota'))
     for v in Visitante.query.filter_by(hora_salida=None).all():
         unidad = v.unidad if v.unidad else 'min'
         limite = v.tiempo_limite
         entrada = datetime.strptime(v.hora_entrada, "%Y-%m-%d %H:%M:%S")
+        entrada = timezone('America/Bogota').localize(entrada)
         if unidad == 'h':
             fin = entrada + timedelta(hours=limite)
         else:
             fin = entrada + timedelta(minutes=limite)
         if ahora > fin:
             visitantes_alerta.append(v)
-    return render_template('admin_dashboard.html', estudiantes=estudiantes, registros=registros, visitantes=visitantes, visitantes_alerta=visitantes_alerta)
+    return render_template(
+        'admin_dashboard.html',
+        estudiantes=estudiantes,
+        registros_estudiantes=registros_estudiantes,
+        visitantes=visitantes,
+        visitantes_alerta=visitantes_alerta
+    )
 
 @app.route('/admin/nuevo_estudiante', methods=['POST'])
 @login_required
@@ -166,13 +200,14 @@ def visitante():
     if request.method == 'POST':
         nombre = request.form.get('nombre')
         motivo = request.form.get('motivo')
+        numero = request.form.get('numero')
         tiempo_limite = int(request.form.get('tiempo_limite'))
         unidad = request.form.get('unidad_tiempo')
-        ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        if not (nombre and motivo and tiempo_limite):
+        ahora = hora_colombia()
+        if not (nombre and motivo and numero and tiempo_limite):
             mensaje = "Todos los campos son obligatorios"
         else:
-            visitante = Visitante(nombre=nombre, motivo=motivo, hora_entrada=ahora, tiempo_limite=tiempo_limite, unidad=unidad)
+            visitante = Visitante(nombre=nombre, motivo=motivo, numero=numero, hora_entrada=ahora, tiempo_limite=tiempo_limite, unidad=unidad)
             db.session.add(visitante)
             db.session.commit()
             nuevo_registro = Registro(
@@ -185,11 +220,10 @@ def visitante():
             db.session.add(nuevo_registro)
             db.session.commit()
             mensaje = f"Visitante {nombre} registrado correctamente."
-    # Visitantes activos (sin hora_salida)
     visitantes_activos = Visitante.query.filter_by(hora_salida=None).all()
     return render_template('visitante.html', mensaje=mensaje, visitantes_activos=visitantes_activos)
 
-# DASHBOARD ESTUDIANTE
+# ACCESO ESTUDIANTE SOLO PIN (sin dashboard ni materias)
 @app.route('/estudiante/login', methods=['GET', 'POST'])
 def estudiante_login():
     if request.method == 'POST':
@@ -197,17 +231,13 @@ def estudiante_login():
         estudiante = Estudiante.query.filter_by(pin=pin).first()
         if estudiante:
             registro_activo = Registro.query.filter_by(persona_id=estudiante.id, rol="Estudiante", activo=True).first()
-            ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            ahora = hora_colombia()
             if registro_activo:
-                # Registrar salida
                 registro_activo.hora_salida = ahora
                 registro_activo.activo = False
                 db.session.commit()
                 flash('¡Salida registrada correctamente! Esperamos verte pronto.', 'success')
-                return redirect(url_for('estudiante_login'))
             else:
-                # Registrar entrada y permitir acceso al dashboard
-                session['estudiante_id'] = estudiante.id
                 nuevo_registro = Registro(
                     persona_id=estudiante.id,
                     nombre=estudiante.nombre,
@@ -217,53 +247,11 @@ def estudiante_login():
                 )
                 db.session.add(nuevo_registro)
                 db.session.commit()
-                return redirect(url_for('estudiante_dashboard'))
+                flash('¡Ingreso registrado correctamente!', 'success')
+            return redirect(url_for('estudiante_login'))
         else:
             flash('PIN incorrecto', 'danger')
     return render_template('estudiante_login.html')
-
-@app.route('/estudiante/dashboard', methods=['GET', 'POST'])
-def estudiante_dashboard():
-    estudiante_id = session.get('estudiante_id')
-    if not estudiante_id:
-        return redirect(url_for('estudiante_login'))
-    estudiante = Estudiante.query.get(estudiante_id)
-    materias = Materia.query.filter_by(estudiante_id=estudiante_id).all()
-    return render_template('estudiante_dashboard.html', estudiante=estudiante, materias=materias)
-
-@app.route('/estudiante/agregar_materia', methods=['POST'])
-def agregar_materia():
-    estudiante_id = session.get('estudiante_id')
-    if not estudiante_id:
-        return redirect(url_for('estudiante_login'))
-    nombre = request.form.get('nombre')
-    hora_inicio = request.form.get('hora_inicio')
-    hora_fin = request.form.get('hora_fin')
-    if not (nombre and hora_inicio and hora_fin):
-        flash('Todos los campos son obligatorios', 'danger')
-        return redirect(url_for('estudiante_dashboard'))
-    materia = Materia(nombre=nombre, hora_inicio=hora_inicio, hora_fin=hora_fin, estudiante_id=estudiante_id)
-    db.session.add(materia)
-    db.session.commit()
-    flash('Materia agregada', 'success')
-    return redirect(url_for('estudiante_dashboard'))
-
-@app.route('/estudiante/eliminar_materia/<int:id>', methods=['POST'])
-def eliminar_materia(id):
-    estudiante_id = session.get('estudiante_id')
-    if not estudiante_id:
-        return redirect(url_for('estudiante_login'))
-    materia = Materia.query.get(id)
-    if materia and materia.estudiante_id == estudiante_id:
-        db.session.delete(materia)
-        db.session.commit()
-        flash('Materia eliminada', 'success')
-    return redirect(url_for('estudiante_dashboard'))
-
-@app.route('/estudiante/logout')
-def estudiante_logout():
-    session.pop('estudiante_id', None)
-    return redirect(url_for('estudiante_login'))
 
 # EXPORTAR HISTORIAL A CSV
 @app.route('/admin/exportar_csv')
@@ -277,6 +265,11 @@ def exportar_csv():
     return Response(generar(), mimetype='text/csv',
                     headers={"Content-Disposition": "attachment;filename=historial_accesos.csv"})
 
+@app.template_filter('todatetime')
+def todatetime(value):
+    from datetime import datetime
+    return datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
@@ -285,5 +278,5 @@ if __name__ == '__main__':
             admin.set_password('admin123')
             db.session.add(admin)
             db.session.commit()
-    app.run(debug=True)
-    
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)

@@ -5,12 +5,16 @@
     <div class="col-md-8 col-lg-7">
         <div class="card p-4 shadow border-0">
             <h2 class="mb-4 fw-bold text-center">Registro de Visitante</h2>
-            <form method="post" id="formVisitante" autocomplete="off">
+            <!-- Formulario de registro de visitante -->
+            <form method="POST" action="{{ url_for('visitante') }}" id="formVisitante" autocomplete="off">
                 <div class="mb-3">
                     <input type="text" name="nombre" class="form-control form-control-lg" placeholder="Nombre Y Apellido" required>
                 </div>
                 <div class="mb-3">
                     <input type="text" name="motivo" class="form-control form-control-lg" placeholder="Motivo de la visita" required>
+                </div>
+                <div class="mb-3">
+                    <input type="text" name="numero" class="form-control form-control-lg" placeholder="Número de contacto" required>
                 </div>
                 <div class="mb-3">
                     <label class="mb-1">Tiempo límite:</label>

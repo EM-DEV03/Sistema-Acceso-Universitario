@@ -1,117 +1,169 @@
 {% extends "base.html" %}
-{% block title %}Panel Administrador{% endblock %}
 {% block content %}
+<div class="container py-4">
 
-{% if visitantes_alerta %}
-<div class="alert alert-danger text-center fw-bold" style="font-size:1.2rem;">
-    {% for v in visitantes_alerta %}
-        <div>¡El tiempo del visitante <b>{{ v.nombre }}</b> ha finalizado!</div>
-    {% endfor %}
-</div>
-{% endif %}
+  {% if visitantes_alerta %}
+    <div id="alerta-visitantes" class="alert alert-danger alert-dismissible fade show fw-bold text-center position-relative" style="transition: opacity 1s;">
+      <button type="button" class="btn-close position-absolute top-0 end-0 m-2" aria-label="Cerrar" onclick="cerrarAlertaVisitantes()"></button>
+      {% for v in visitantes_alerta %}
+        ¡El tiempo del visitante <b>{{ v.nombre }}</b> ha finalizado!<br>
+      {% endfor %}
+    </div>
+    <script>
+      function cerrarAlertaVisitantes() {
+        var alerta = document.getElementById('alerta-visitantes');
+        if (alerta) {
+          alerta.style.opacity = '0';
+          setTimeout(function() {
+            alerta.style.display = 'none';
+          }, 1000);
+        }
+      }
+      setTimeout(cerrarAlertaVisitantes, 3000);
+    </script>
+  {% endif %}
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card p-3 mb-4">
-            <h4>Registrar nuevo estudiante</h4>
-            <form method="post" action="{{ url_for('nuevo_estudiante') }}">
-                <div class="row">
-                    <div class="col mb-2">
-                        <input type="text" name="nombre" class="form-control" placeholder="Nombre" required>
-                    </div>
-                    <div class="col mb-2">
-                        <input type="text" name="dni" class="form-control" placeholder="DNI" required>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col mb-2">
-                        <input type="text" name="telefono" class="form-control" placeholder="Teléfono" required>
-                    </div>
-                    <div class="col mb-2">
-                        <input type="text" name="curso" class="form-control" placeholder="Curso" required>
-                    </div>
-                    <div class="col mb-2">
-                        <input type="text" name="salon" class="form-control" placeholder="Salón" required>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-success w-100">Registrar</button>
-            </form>
+  <div class="row">
+    <!-- Columna izquierda -->
+    <div class="col-lg-5 mb-4">
+      <div class="card p-4 shadow-sm border-0 mb-4">
+        <h4 class="mb-3 fw-bold" style="color:#176b4d;">Registrar nuevo estudiante</h4>
+        <form method="POST" action="{{ url_for('nuevo_estudiante') }}">
+          <div class="row mb-2">
+            <div class="col"><input type="text" name="nombre" class="form-control" placeholder="Nombre" required></div>
+            <div class="col"><input type="text" name="dni" class="form-control" placeholder="DNI" required></div>
+          </div>
+          <div class="row mb-2">
+            <div class="col"><input type="text" name="telefono" class="form-control" placeholder="Teléfono" required></div>
+            <div class="col"><input type="text" name="curso" class="form-control" placeholder="Curso" required></div>
+            <div class="col"><input type="text" name="salon" class="form-control" placeholder="Salón" required></div>
+          </div>
+          <button type="submit" class="btn btn-success w-100 mt-2">Registrar</button>
+        </form>
+      </div>
+      <div class="card p-4 shadow-sm border-0 mb-4">
+        <h4 class="mb-3 fw-bold" style="color:#113366;">Estudiantes registrados</h4>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>DNI</th>
+                <th>PIN</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for estudiante in estudiantes %}
+                <tr>
+                  <td>{{ estudiante.nombre }}</td>
+                  <td>{{ estudiante.dni }}</td>
+                  <td>{{ estudiante.pin }}</td>
+                  <td>
+                    <form method="POST" action="{{ url_for('eliminar_estudiante', id=estudiante.id) }}" style="display:inline;">
+                      <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                    </form>
+                  </td>
+                </tr>
+              {% else %}
+                <tr><td colspan="4" class="text-center text-muted">Sin estudiantes registrados</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
-        <div class="card p-3">
-            <h4>Estudiantes registrados</h4>
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>Nombre</th><th>DNI</th><th>PIN</th><th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for est in estudiantes %}
-                    <tr>
-                        <td>{{ est.nombre }}</td>
-                        <td>{{ est.dni }}</td>
-                        <td>{{ est.pin }}</td>
-                        <td>
-                            <form method="post" action="{{ url_for('eliminar_estudiante', id=est.id) }}" style="display:inline;">
-                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="mt-3 text-end">
+          <a href="{{ url_for('exportar_csv') }}" class="btn btn-outline-primary">Exportar historial a CSV</a>
         </div>
-        <div class="card p-3 mt-4">
-            <a href="{{ url_for('exportar_csv') }}" class="btn btn-outline-primary w-100">Exportar historial a CSV</a>
-        </div>
+      </div>
     </div>
-    <div class="col-md-6">
-        <div class="card p-3 mb-4">
-            <h4 class="fw-bold" style="color:#0a346d;">Últimos registros</h4>
-            <table class="table table-sm">
+    <!-- Columna derecha -->
+    <div class="col-lg-7 mb-4">
+     
+          <div class="card p-4 shadow-sm border-0">
+            <h4 class="mb-3 fw-bold" style="color:#113366;">Últimos registros de estudiantes</h4>
+            <div class="table-responsive">
+              <table class="table table-sm align-middle mb-0">
                 <thead>
-                    <tr>
-                        <th>Nombre</th><th>Rol</th><th>Entrada</th><th>Salida</th>
-                    </tr>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Entrada</th>
+                    <th>Salida</th>
+                    <th>Estado</th>
+                  </tr>
                 </thead>
                 <tbody>
-                    {% for reg in registros %}
-                        <tr>
-                            <td>{{ reg.nombre }}</td>
-                            <td>{{ reg.rol }}</td>
-                            <td>{{ reg.hora_entrada }}</td>
-                            <td>{{ reg.hora_salida or '-' }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="card p-3">
-            <h4 class="fw-bold" style="color:#0a346d;">Últimos visitantes</h4>
-            <table class="table table-sm">
-                <thead>
+                  {% for r in registros_estudiantes %}
                     <tr>
-                        <th>Nombre</th><th>Motivo</th><th>Entrada</th><th>Tiempo límite (min/h)</th>
+                      <td>{{ r.nombre }}</td>
+                      <td>{{ r.hora_entrada or '-' }}</td>
+                      <td>{{ r.hora_salida or '-' }}</td>
+                      <td>
+                        {% if not r.hora_salida %}
+                          <span class="badge bg-success">Activo</span>
+                        {% else %}
+                          <span class="badge bg-secondary">Inactivo</span>
+                        {% endif %}
+                      </td>
                     </tr>
-                </thead>
-                <tbody>
-                    {% for v in visitantes %}
-                        <tr>
-                            <td>{{ v.nombre }}</td>
-                            <td>{{ v.motivo }}</td>
-                            <td>{{ v.hora_entrada }}</td>
-                            <td>
-                                {% if v.unidad == 'h' %}
-                                    {{ v.tiempo_limite }} hora(s)
-                                {% else %}
-                                    {{ v.tiempo_limite }} minuto(s)
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
+                  {% else %}
+                    <tr><td colspan="4" class="text-center text-muted">Sin registros</td></tr>
+                  {% endfor %}
                 </tbody>
-            </table>
+              </table>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
+
+    <!-- Tabla de historial de visitas en el panel admin -->
+    <div class="card p-4 shadow-sm border-0 mb-4">
+      <h4 class="mb-3 fw-bold" style="color:#176b4d;">Historial de visitas</h4>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Motivo</th>
+              <th>Número</th>
+              <th>Entrada</th>
+              <th>Salida</th>
+              <th>Tiempo en el lugar</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for v in visitantes %}
+              <tr>
+                <td>{{ v.nombre }}</td>
+                <td>{{ v.motivo }}</td>
+                <td>{{ v.numero }}</td>
+                <td>{{ v.hora_entrada or '-' }}</td>
+                <td>{{ v.hora_salida or '-' }}</td>
+                <td>
+                  {% if v.hora_salida %}
+                    {% set entrada = v.hora_entrada | todatetime %}
+                    {% set salida = v.hora_salida | todatetime %}
+                    {{ (salida - entrada) }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+                <td>
+                  {% if not v.hora_salida %}
+                    <span class="badge bg-success">Dentro</span>
+                  {% else %}
+                    <span class="badge bg-danger">Afuera</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="7" class="text-center text-muted">Sin visitas registradas</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
