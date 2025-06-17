@@ -130,15 +130,11 @@ def actualizar_visitantes_finalizados():
 def admin_dashboard():
     actualizar_visitantes_finalizados()
     estudiantes = Estudiante.query.all()
-    registros_estudiantes = Registro.query.filter_by(rol="Estudiante").order_by(Registro.id.desc()).limit(20).all()
-    visitantes = Visitante.query.order_by(Visitante.id.desc()).all()
-    # Convertir fechas a hora colombiana para mostrar
-    for v in visitantes:
-        v.hora_entrada_col = v.hora_entrada
-        v.hora_salida_col = v.hora_salida
-    for r in registros_estudiantes:
-        r.hora_entrada_col = r.hora_entrada
-        r.hora_salida_col = r.hora_salida
+    # Solo estudiantes en registros
+    registros = Registro.query.filter_by(rol="Estudiante").order_by(Registro.id.desc()).limit(20).all()
+    # Solo visitantes en visitantes
+    visitantes = Visitante.query.order_by(Visitante.id.desc()).limit(10).all()
+    # Visitantes activos cuyo tiempo terminó
     visitantes_alerta = []
     ahora = datetime.now(timezone('America/Bogota'))
     for v in Visitante.query.filter_by(hora_salida=None).all():
@@ -238,6 +234,8 @@ def estudiante_login():
                 db.session.commit()
                 flash('¡Salida registrada correctamente! Esperamos verte pronto.', 'success')
             else:
+                # Registrar entrada y permitir acceso al dashboard
+                session['estudiante_id'] = estudiante.id
                 nuevo_registro = Registro(
                     persona_id=estudiante.id,
                     nombre=estudiante.nombre,
@@ -275,7 +273,7 @@ if __name__ == '__main__':
         db.create_all()
         if not Admin.query.filter_by(username='admin').first():
             admin = Admin(username='admin')
-            admin.set_password('admin123')
+            admin.set_password('123')
             db.session.add(admin)
             db.session.commit()
     port = int(os.environ.get("PORT", 5000))

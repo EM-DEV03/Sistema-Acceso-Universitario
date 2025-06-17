@@ -11,9 +11,7 @@ Sistema web para la gestión y control de accesos de estudiantes y visitantes en
 - [Instalación](#instalación)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Configuración Inicial](#configuración-inicial)
-- [Acceso Inicial](#acceso-inicial)
 - [Documentación y Manual de Usuario](#documentación-y-manual-de-usuario)
-- [Licencia](#licencia)
 
 ---
 
