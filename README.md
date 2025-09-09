@@ -96,7 +96,7 @@ Sistema-Acceso-Universitario/
 
 - El usuario administrador por defecto es:
   - Usuario: `admin`
-  - Contraseña: `admin123`
+  - Contraseña: `123`
 
 ---
 
